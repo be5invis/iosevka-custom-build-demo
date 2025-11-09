@@ -53,7 +53,7 @@ jobs:
 
       # Upload build artifacts
       - name: Upload Font Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.fontName }}-ttf
           path: iosevka/dist/${{ matrix.fontName }}/ttf/
