@@ -1,0 +1,59 @@
+name: Build Custom Iosevka Fonts
+
+on: []
+
+jobs:
+  build:
+    name: Build ${{ matrix.fontName }} font
+    if: github.repository == 'be5invis/iosevka-custom-build-demo'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        # Edit this list to include your custom font names
+        fontName: ["IosevkaCustomSample"]
+
+    steps:
+      # Setup dependencies
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - name: Install ttfautohint
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ttfautohint
+
+      # Checkout this repository to access custom build plans
+      - uses: actions/checkout@v5
+        with:
+          path: customization
+
+      # Checkout repository into `iosevka` sub directory
+      - uses: actions/checkout@v5
+        with:
+          repository: be5invis/iosevka # You can change this to your own fork
+          path: iosevka
+      
+      # Copy custom build plans into Iosevka build directory
+      - name: Copy Custom Build Plans
+        shell: bash
+        run: |
+          cp customization/private-build-plans.toml iosevka/private-build-plans.toml
+
+      # Build the font
+      - name: Build Font ${{ matrix.fontName }}
+        shell: bash
+        working-directory: iosevka
+        run: |
+          npm install
+          npm run build -- ttf::${{ matrix.fontName }}
+
+      # Upload build artifacts
+      - name: Upload Font Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.fontName }}-ttf
+          path: iosevka/dist/${{ matrix.fontName }}/ttf/
