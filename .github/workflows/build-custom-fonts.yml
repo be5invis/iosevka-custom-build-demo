@@ -5,7 +5,8 @@ on: [workflow_dispatch]
 jobs:
   setup-matrix:
     runs-on: ubuntu-latest
-
+    outputs:
+      fontFamilies: ${{ steps.get-families.outputs.fontFamilies }}
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v6
