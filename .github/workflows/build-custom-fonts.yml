@@ -1,9 +1,10 @@
 name: Build Custom Iosevka Fonts
 
-on: [workflow_dispatch]
+on: [push, workflow_dispatch]
 
 jobs:
   setup-matrix:
+    name: Discover Font Families to Build
     runs-on: ubuntu-latest
     outputs:
       fontFamilies: ${{ steps.get-families.outputs.fontFamilies }}
@@ -35,7 +36,7 @@ jobs:
 
     steps:
       # Setup dependencies
-      - name: Use Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: lts/*
@@ -47,12 +48,14 @@ jobs:
           sudo apt-get install -y --no-install-recommends ttfautohint
 
       # Checkout this repository to access custom build plans
-      - uses: actions/checkout@v5
+      - name: Checkout Customization Repository
+        uses: actions/checkout@v5
         with:
           path: customization
 
       # Checkout repository into `iosevka` sub directory
-      - uses: actions/checkout@v5
+      - name: Checkout Iosevka Repository
+        uses: actions/checkout@v5
         with:
           repository: be5invis/iosevka # You can change this to your own fork
           path: iosevka
