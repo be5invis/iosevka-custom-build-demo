@@ -49,13 +49,13 @@ jobs:
 
       # Checkout this repository to access custom build plans
       - name: Checkout Customization Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: customization
 
       # Checkout repository into `iosevka` sub directory
       - name: Checkout Iosevka Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: be5invis/iosevka # You can change this to your own fork
           path: iosevka
