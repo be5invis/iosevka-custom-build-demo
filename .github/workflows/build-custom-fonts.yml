@@ -7,7 +7,8 @@ jobs:
     name: Discover Font Families to Build
     runs-on: ubuntu-latest
     outputs:
-      fontFamilies: ${{ steps.get-families.outputs.fontFamilies }}
+      buildPlans: ${{ steps.get-families.outputs.buildPlans }}
+      collectPlans: ${{ steps.get-families.outputs.collectPlans }}
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -24,15 +25,15 @@ jobs:
           npm install
           node ./index.mjs >> $GITHUB_OUTPUT
 
-  build:
-    name: Build ${{ matrix.fontFamily }} font
+  build-ttf:
+    name: Build ${{ matrix.fontFamily }} font (Standalone)
     runs-on: ubuntu-latest
     
     needs: [setup-matrix]
 
     strategy:
       matrix:
-        fontFamily: ${{ fromJson(needs.setup-matrix.outputs.fontFamilies) }}
+        fontFamily: ${{ fromJson(needs.setup-matrix.outputs.buildPlans) }}
 
     steps:
       # Setup dependencies
@@ -80,3 +81,60 @@ jobs:
         with:
           name: ${{ matrix.fontFamily }}-ttf
           path: iosevka/dist/${{ matrix.fontFamily }}/TTF/
+
+  build-ttc:
+    name: Build ${{ matrix.fontFamily }} font (Combined)
+    runs-on: ubuntu-latest
+    
+    needs: [setup-matrix]
+
+    strategy:
+      matrix:
+        fontFamily: ${{ fromJson(needs.setup-matrix.outputs.collectPlans) }}
+
+    steps:
+      # Setup dependencies
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - name: Install ttfautohint
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ttfautohint
+
+      # Checkout this repository to access custom build plans
+      - name: Checkout Customization Repository
+        uses: actions/checkout@v6
+        with:
+          path: customization
+
+      # Checkout repository into `iosevka` sub directory
+      - name: Checkout Iosevka Repository
+        uses: actions/checkout@v6
+        with:
+          repository: be5invis/iosevka # You can change this to your own fork
+          path: iosevka
+      
+      # Copy custom build plans into Iosevka build directory
+      - name: Copy Custom Build Plans
+        shell: bash
+        run: |
+          cp customization/private-build-plans.toml iosevka/private-build-plans.toml
+
+      # Build the font
+      - name: Build Font ${{ matrix.fontFamily }}
+        shell: bash
+        working-directory: iosevka
+        run: |
+          npm install
+          npm run build -- ttc::${{ matrix.fontFamily }}
+
+      # Upload build artifacts
+      - name: Upload Font Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.fontFamily }}-ttc
+          path: iosevka/dist/.ttc/${{ matrix.fontFamily }}/
