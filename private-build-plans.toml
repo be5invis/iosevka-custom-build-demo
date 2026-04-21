@@ -29,5 +29,6 @@ shape = "italic"
 menu = "italic"
 css = "italic"
 
-[collectPlans.IosevkaCustomSample]
-from = ["IosevkaCustomSample"]
+# To enable TTC building, uncomment the following section and write your collect plans
+# [collectPlans.IosevkaCustomSample]
+# from = ["IosevkaCustomSample"]
