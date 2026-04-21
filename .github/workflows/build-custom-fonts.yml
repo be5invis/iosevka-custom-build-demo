@@ -87,6 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     
     needs: [setup-matrix]
+    if: ${{ needs.setup-matrix.outputs.collectPlans != '[]' && needs.setup-matrix.outputs.collectPlans != '' }}
 
     strategy:
       matrix:
